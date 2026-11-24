@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#172b3b">
+  <title>GaugeTrack | Calibration &amp; Tool Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+  <script src="sample-data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="GaugeTrack home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">Gauge<span>Track</span><small>CALIBRATION CONTROL</small></span>
+      </a>
+      <section class="organization-switcher" aria-label="Organization workspace">
+        <span class="organization-label">ORGANIZATION</span>
+        <label class="organization-select-wrap">
+          <span class="visually-hidden">Select organization</span>
+          <select id="organization-select" aria-label="Select organization"></select>
+        </label>
+        <button class="organization-manage" id="manage-organizations" type="button" aria-label="Manage organizations">
+          <span class="organization-avatar" id="active-org-initials" aria-hidden="true">M</span>
+          <span>Manage organizations</span><span class="organization-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>
+      <div class="nav-caption">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-view="dashboard"><span class="nav-icon">▦</span>Overview</button>
+        <button class="nav-link" data-view="registry"><span class="nav-icon">▤</span>Gauge registry</button>
+        <button class="nav-link" data-view="scanner"><span class="nav-icon">⌗</span>QR scanner <span class="nav-tag">DEMO</span></button>
+        <button class="nav-link" data-view="activity"><span class="nav-icon">↔</span>Borrowing</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note">
+          <span class="note-icon">i</span>
+          <div><strong>Calibration matters</strong><p>Keep every instrument ready, traceable, and in spec.</p></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span id="workspace-label">Organization</span><b>/</b><strong id="breadcrumb-current">Overview</strong></div>
+        <div class="topbar-right">
+          <span class="today-label" id="today-label"></span>
+          <button class="quick-search-trigger" id="open-quick-search" aria-label="Quick search equipment" title="Quick search (Ctrl+K)"><span>⌕</span><span class="quick-search-placeholder">Find equipment or action...</span><kbd>Ctrl K</kbd></button>
+          <span class="system-status"><i></i> LOCAL DATA READY</span>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboard-view">
+        <div class="page-heading">
+          <div><div class="eyebrow">YOUR WORKSPACE <span class="eyebrow-line"></span></div><h1>Good morning, <span id="dashboard-org-name">team</span> <span class="wave">✳</span></h1><p>Here’s the current status of your measurement equipment.</p></div>
+          <div class="heading-actions"><button class="button button-outline" id="load-samples"><span>↻</span> Load sample data</button><button class="button button-primary" data-view="scanner"><span>⌗</span> Scan to register</button></div>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon blue">▤</span><span class="stat-trend">IN REGISTER</span></div><div class="stat-number" id="stat-total">0</div><div class="stat-label">Total equipment</div><div class="stat-foot"><span class="foot-dot blue-dot"></span> Across all categories</div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon green">✓</span><span class="stat-trend">IN CALIBRATION</span></div><div class="stat-number" id="stat-calibrated">0</div><div class="stat-label">Calibration current</div><div class="stat-foot"><span class="foot-dot green-dot"></span> Ready for use</div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon amber">◷</span><span class="stat-trend">ACTION NEEDED</span></div><div class="stat-number" id="stat-due">0</div><div class="stat-label">Due soon or overdue</div><div class="stat-foot"><span class="foot-dot amber-dot"></span><span id="overdue-caption">0 overdue</span></div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon violet">↗</span><span class="stat-trend">IN THE FIELD</span></div><div class="stat-number" id="stat-borrowed">0</div><div class="stat-label">Currently checked out</div><div class="stat-foot"><span class="foot-dot violet-dot"></span> With a team member</div></article>
+        </div>
+        <section class="panel calibration-chart-panel" aria-labelledby="calibration-chart-title">
+          <div class="panel-heading"><div><div class="eyebrow">CALIBRATION STATUS</div><h2 id="calibration-chart-title">Equipment readiness</h2></div><span class="chart-total" id="chart-total">0 instruments</span></div>
+          <div class="calibration-chart-content">
+            <div class="calibration-chart" id="calibration-chart" role="img" aria-label="No equipment records in this workspace"></div>
+            <div class="calibration-legend" aria-label="Calibration status counts">
+              <span><i class="chart-dot calibrated"></i>Calibrated <strong id="chart-calibrated">0</strong></span>
+              <span><i class="chart-dot due-soon"></i>Due soon <strong id="chart-due-soon">0</strong></span>
+              <span><i class="chart-dot overdue"></i>Overdue <strong id="chart-overdue">0</strong></span>
+            </div>
+          </div>
+        </section>
+        <section class="quick-actions" aria-label="Quick actions">
+          <div class="quick-actions-title"><span class="eyebrow">QUICK ACTIONS</span><span>Jump straight to the next task</span></div>
+          <button class="quick-action-card" data-quick="scan"><span class="quick-action-icon scan-icon">⌗</span><span><strong>Scan equipment</strong><small>Register or identify a gauge</small></span><b>→</b></button>
+          <button class="quick-action-card" data-quick="due"><span class="quick-action-icon due-icon">◷</span><span><strong>Calibration due</strong><small id="quick-due-count">0 need attention</small></span><b>→</b></button>
+          <button class="quick-action-card" data-quick="borrowed"><span class="quick-action-icon borrow-icon">↩</span><span><strong>Check-ins due</strong><small id="quick-borrowed-count">0 currently borrowed</small></span><b>→</b></button>
+        </section>
+        <div class="content-grid">
+          <section class="panel equipment-panel">
+            <div class="panel-heading"><div><div class="eyebrow">EQUIPMENT HEALTH</div><h2>Calibration overview</h2></div><button class="text-button" data-view="registry">View registry <span>→</span></button></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>EQUIPMENT</th><th>GAUGE ID</th><th>NEXT CALIBRATION</th><th>STATUS</th><th></th></tr></thead><tbody id="dashboard-equipment-body"></tbody></table>
+            </div>
+            <div class="empty-state hidden" id="dashboard-empty"><span class="empty-icon">▤</span><strong>No equipment to show yet</strong><p>Scan a full equipment QR passport to register a gauge automatically.</p><button class="button button-primary button-small" data-view="scanner">Scan a QR passport</button></div>
+          </section>
+          <aside class="panel activity-panel">
+            <div class="panel-heading"><div><div class="eyebrow">LATEST UPDATES</div><h2>Recent activity</h2></div><button class="icon-button" data-view="activity" aria-label="View all activity">···</button></div>
+            <div class="recent-list" id="dashboard-activity"></div>
+            <button class="activity-link" data-view="activity">View borrowing page <span>→</span></button>
+          </aside>
+        </div>
+        <section class="demo-strip">
+          <div class="demo-icon">✦</div><div class="demo-copy"><strong>Ready to explore?</strong><span>Follow a quick guided demo, or try scanning a sample QR code.</span></div>
+          <button class="button button-outline button-small" data-view="scanner">Open QR demo <span>→</span></button>
+          <button class="button button-quiet button-small" id="demo-steps-toggle">Show demo steps <span>⌄</span></button>
+        </section>
+        <div class="demo-steps hidden" id="demo-steps">
+          <div><b>01</b><span>Load sample equipment</span><small>Start with three realistic gauges in different states.</small></div>
+          <div><b>02</b><span>Look up a gauge</span><small>Choose a mock QR code in the scanner demo.</small></div>
+          <div><b>03</b><span>Check out a tool</span><small>Assign it to a person and set a return date.</small></div>
+          <div><b>04</b><span>Return and inspect</span><small>Record the condition and review the activity log.</small></div>
+        </div>
+      </section>
+
+      <section class="view" id="registry-view">
+        <div class="page-heading">
+          <div><div class="eyebrow">ASSET MANAGEMENT <span class="eyebrow-line"></span></div><h1>Gauge registry</h1><p>Add equipment manually or scan a passport to register or update a gauge.</p></div>
+          <div class="heading-actions"><button class="button button-outline" id="registry-load-samples">Load sample data</button><button class="button button-outline" data-view="scanner"><span>⌗</span> Scan to register</button><button class="button button-primary" id="add-equipment"><span>＋</span> Add device</button></div>
+        </div>
+        <section class="panel registry-panel">
+          <div class="registry-toolbar registry-toolbar-stack">
+            <div class="toolbar-title"><strong>All equipment</strong><span id="registry-count">0 items</span><div class="data-actions"><button class="button button-outline button-small" id="export-csv">Export CSV</button><button class="button button-outline button-small" id="backup-json">Backup</button><button class="button button-outline button-small" id="restore-json">Restore</button><input id="backup-file" class="visually-hidden" type="file" accept="application/json,.json"></div></div>
+            <div class="toolbar-controls"><label class="search-box"><span>⌕</span><input id="registry-search" type="search" placeholder="Search equipment..." aria-label="Search equipment"></label><select id="status-filter" aria-label="Filter equipment"><option value="all">All equipment</option><option value="action-needed">Due soon / overdue</option><option value="due-soon">Due soon</option><option value="overdue">Overdue</option><option value="borrowed">Checked out</option><option value="calibrated">Calibrated</option></select></div>
+          </div>
+          <div class="table-wrap">
+            <table><thead><tr><th>EQUIPMENT / SERIAL</th><th>GAUGE ID</th><th>CATEGORY</th><th>NEXT CALIBRATION</th><th>LOCATION</th><th>STATUS</th><th></th></tr></thead><tbody id="registry-body"></tbody></table>
+          </div>
+          <div class="empty-state hidden" id="registry-empty"><span class="empty-icon">⌕</span><strong>No matching equipment</strong><p>Try changing your search or filter.</p></div>
+        </section>
+      </section>
+
+      <section class="view" id="scanner-view">
+        <div class="page-heading">
+          <div><div class="eyebrow">FAST LOOKUP <span class="eyebrow-line"></span></div><h1>QR scanner</h1><p>Scan a full QR passport to save or update all equipment details automatically.</p></div>
+          <button class="button button-outline" data-view="registry">Go to registry <span>→</span></button>
+        </div>
+        <div class="scanner-layout">
+          <section class="panel scanner-panel">
+            <div class="panel-heading"><div><div class="eyebrow">SCAN A LABEL</div><h2>Camera or image</h2></div><span class="live-pill"><i></i> READY</span></div>
+            <p class="panel-intro">Scan a GaugeTrack QR passport using your camera or an image. Full passports save all equipment details automatically; ID-only QR codes can only look up devices already on this device.</p>
+            <div id="qr-reader" class="qr-reader"></div>
+            <div class="scanner-buttons"><button class="button button-primary" id="start-scanner">Start camera</button><button class="button button-outline" id="stop-scanner" disabled>Stop camera</button><label class="button button-outline file-scan-button" for="qr-file">Scan image</label><input id="qr-file" class="visually-hidden" type="file" accept="image/*"></div>
+            <p class="scanner-help">Camera scanning requires permission and a secure context (HTTPS or localhost). To add a device on another browser, open GaugeTrack there and scan its full QR passport.</p>
+            <div class="inline-error hidden" id="scanner-error" role="alert"></div>
+          </section>
+          <section class="panel demo-lookup-panel">
+            <div class="panel-heading"><div><div class="eyebrow">PRESENTATION MODE</div><h2>Try a sample lookup</h2></div><span class="demo-badge">NO CAMERA NEEDED</span></div>
+            <p class="panel-intro">Choose a mock QR code to test the lookup flow during your demo.</p>
+            <label class="field-label" for="mock-qr-select">SAMPLE QR CODE</label>
+            <div class="select-with-icon"><span>⌗</span><select id="mock-qr-select"><option value="">Load sample data to get started</option></select></div>
+            <button class="button button-primary lookup-button" id="lookup-mock">Look up equipment <span>→</span></button>
+            <div class="lookup-result hidden" id="lookup-result" aria-live="polite"></div>
+            <div class="demo-tip"><span>✦</span><p><strong>Demo tip</strong> The sample gauges include calibrated, due-soon, and overdue examples.</p></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="activity-view">
+        <div class="page-heading">
+          <div><div class="eyebrow">EQUIPMENT CHECKOUTS <span class="eyebrow-line"></span></div><h1>Borrowing</h1><p>See who has each instrument, when it was borrowed, and when it is due back.</p></div>
+          <button class="button button-outline" data-view="registry">Browse equipment <span>→</span></button>
+        </div>
+        <section class="panel borrowing-panel">
+          <div class="panel-heading"><div><div class="eyebrow">CURRENTLY OUT</div><h2>Active borrowings</h2></div><span class="borrowing-count" id="borrowing-count">0 items</span></div>
+          <div class="table-wrap">
+            <table><thead><tr><th>EQUIPMENT</th><th>BORROWER</th><th>DEPARTMENT</th><th>CHECKED OUT</th><th>DUE BACK</th><th>STATUS</th><th></th></tr></thead><tbody id="borrowing-body"></tbody></table>
+          </div>
+          <div class="empty-state hidden" id="borrowing-empty"><span class="empty-icon">↔</span><strong>No equipment is currently borrowed</strong><p>Checked-out equipment and borrower details will appear here.</p><button class="button button-outline button-small" data-view="registry">Go to equipment registry</button></div>
+        </section>
+        <section class="panel registry-panel">
+          <div class="registry-toolbar"><div class="toolbar-title"><strong>Borrowing history</strong><span id="activity-count">0 events</span></div><div class="toolbar-controls"><label class="search-box"><span>⌕</span><input id="activity-search" type="search" placeholder="Search activity..." aria-label="Search activity"></label><select id="activity-filter" aria-label="Filter activity"><option value="all">All activity</option><option value="calibration">Calibrations</option><option value="register">Registrations</option><option value="update">Profile updates</option><option value="checkout">Check-outs</option><option value="return">Returns</option></select></div></div>
+          <div class="table-wrap"><table><thead><tr><th>ACTIVITY</th><th>EQUIPMENT</th><th>PERSON / DETAILS</th><th>DUE / NEXT DATE</th><th>DATE &amp; TIME</th></tr></thead><tbody id="activity-body"></tbody></table></div>
+          <div class="empty-state hidden" id="activity-empty"><span class="empty-icon">↔</span><strong>No activity recorded yet</strong><p>Check out a gauge to start an equipment history.</p></div>
+        </section>
+      </section>
+
+      <section class="view" id="product-view" aria-live="polite">
+        <div id="product-passport-content"></div>
+      </section>
+
+      <footer class="page-footer"><span>GAUGETRACK <b>·</b> CALIBRATION &amp; TOOL CONTROL</span><span>THIS BROWSER <i></i> SAVED LOCALLY · BACK UP REGULARLY</span></footer>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-heading"><div><div class="eyebrow" id="modal-eyebrow">EQUIPMENT</div><h2 id="modal-title">Add equipment</h2></div><button class="icon-button close-modal" aria-label="Close dialog">×</button></div>
+      <div id="modal-content"></div>
+    </section>
+  </div>
+  <div class="quick-search-backdrop hidden" id="quick-search-backdrop">
+    <section class="quick-search-dialog" role="dialog" aria-modal="true" aria-labelledby="quick-search-title">
+      <h2 class="visually-hidden" id="quick-search-title">Quick search and actions</h2>
+      <label class="quick-search-input"><span>⌕</span><input id="quick-search-input" type="search" placeholder="Search equipment, serial, location..." autocomplete="off"><kbd>ESC</kbd></label>
+      <div class="quick-search-results" id="quick-search-results"></div>
+      <footer><span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span><span><kbd>ENTER</kbd> Select</span><span>Searches this browser’s register</span></footer>
+    </section>
+  </div>
+  <div class="toast-region" id="toast-region" aria-live="polite"></div>
+</body>
+</html>
